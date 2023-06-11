@@ -1,88 +1,74 @@
 import React, { useState } from "react";
+import Head from "next/head";
 import { chatWithGPT } from "../lib/chatgpt";
 
 function Home() {
   const [userInput, setUserInput] = useState("");
   const [response, setResponse] = useState("");
-
+  const [historyArr, setHistoryArr] = useState([]);
+  const [currentVoice, setCurrentVoice] = useState([]);
   const handleUserInput = (e) => {
     setUserInput(e.target.value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setHistoryArr((historyArr) => [
+      ...historyArr,
+      { msg: userInput, from: "usr" },
+    ]);
+
+    const conversationHistory =
+      historyArr
+        .map((line) => `${line.from === "usr" ? "You: " : "AI: "}${line.msg}`)
+        .join("\n") + `\nYou: ${userInput}`;
 
     try {
-      const generatedResponse = await chatWithGPT(userInput);
+      const generatedResponse = await chatWithGPT(userInput); // pass the conversation history to the GPT function
       setResponse(generatedResponse);
-      console.log(response);
+      setHistoryArr((historyArr) => [
+        ...historyArr,
+        { msg: generatedResponse, from: "gpt" },
+      ]);
     } catch (error) {
       console.error(error);
     }
   };
 
   return (
-    <main
-      className="w-screen h-screen flex justify-center items-center"
-      style={{ fontFamily: "Kanit, sans-serif" }}
-    >
-      <div className="flex flex-col items-center">
-        <div className="text-[2.4em] font-medium">AI Adventure</div>
-        <div className="w-[800px] h-[600px] border-2 border-gray-500 dark:border-white">
-          <div className="w-full h-[540px] px-6 py-4 text-white text-[1.5em] overflow-y-scroll">
-            <div>	&#62; Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-            <div>Line</div>
-
-
-          </div>
-          <div className="h-[56px] w-full flex justify-center items-center bg-yellow-500">
-            <div className="border-gray-500 dark:border-white  flex relative">
-              <button
-                onClick={handleSubmit}
-                className="h-[56px] w-[160px] bg-gray-500"
-              >
-                Send
-              </button>
-              <input
-                className="h-[56px w-[600px] dark:bg-gray-800 px-4 dark:text-gray-200 text-[1.2em]"
-                type={"text"}
-                placeholder="What will you do?"
-                value={userInput}
-                onChange={handleUserInput}
-              ></input>
-              <button className="flex justify-center items-center h-[56px] w-[35px] bg-gray-500">
-                <i className="fa-solid fa-gear"></i>
-              </button>
+    <>
+      <Head>
+        <title>Say What?</title>
+      </Head>
+      <main
+        className="w-screen h-screen flex bg-gray-900"
+        style={{ fontFamily: "Kanit, sans-serif" }}
+      >
+        <div className="w-1/2 bg-blue-700 text-white rounded-lg">
+          <div className="h-1/2 bg-cyan-700 rounded-lg flex justify-center items-end p-4">
+            <div className="font-extrabold leading-[4em]">
+              <div className="text-[4em]">SAY</div>
+              <div className="text-[4em]">WHAT?</div>
             </div>
           </div>
-          <div>{response}</div>
+          <div className="h-1/2 flex justify-center items-start p-4">
+            <div>Available Voices</div>
+          </div>
         </div>
-      </div>
-    </main>
+        <div className="w-1/2 bg-blue-500 rounded-lg flex justify-center items-center">
+          <div className="w-[350px] h-[500px] bg-white text-gray-700 rounded-xl p-4 flex flex-col gap-2 ">
+            <label htmlFor="voiceInput">Select Desired Voice</label>
+            <input type="select" id="voiceInput" className="border-2" placeholder="Donald Trump"></input>
+            <label htmlFor="lengthInput">Length</label>
+            <input type="range" id="lengthInput"></input>
+            <label htmlFor="stabilityInput">Stability</label>
+            <input type="range" id="stabilityInput"></input>
+            <label htmlFor="topicInput">Topic</label>
+            <input type="text" id="topicInput" placeholder="Placeholder" className="border-2"></input>
+          </div>
+        </div>
+      </main>
+    </>
   );
 }
 
